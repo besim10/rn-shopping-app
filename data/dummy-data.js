@@ -1,6 +1,6 @@
 import Product from "../models/product";
 
-const PRODUCTS = [
+export const PRODUCTS = [
   new Product(
     "p1",
     "u1",
