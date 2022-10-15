@@ -1,19 +1,22 @@
+import React, { useState, useCallback, useLayoutEffect } from "react";
 import {
-  StyleSheet,
-  ScrollView,
-  Platform,
-  TextInput,
-  Text,
   View,
+  ScrollView,
+  Text,
+  TextInput,
+  StyleSheet,
+  Platform,
 } from "react-native";
-import React, { useEffect, useState } from "react";
 import { HeaderButtons, Item } from "react-navigation-header-buttons";
-import HeaderButton from "../../components/UI/CostumHeaderButton";
+import { useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
 import * as productsActions from "../../store/actions/products";
-import { useDispatch, useSelector } from "react-redux";
+import HeaderButton from "../../components/UI/CostumHeaderButton";
+
 const EditProductScreen = (props) => {
   const dispatch = useDispatch();
   const prodId = props.route?.params?.productId;
+
   const editedProduct = useSelector((state) =>
     state.products.userProducts.find((prod) => prod.id === prodId)
   );
@@ -22,12 +25,12 @@ const EditProductScreen = (props) => {
   const [imageUrl, setImageUrl] = useState(
     editedProduct ? editedProduct.imageUrl : ""
   );
+  const [price, setPrice] = useState("");
   const [description, setDescription] = useState(
     editedProduct ? editedProduct.description : ""
   );
-  const [price, setPrice] = useState("");
 
-  const submitHandler = () => {
+  const submitHandler = useCallback(() => {
     if (editedProduct) {
       dispatch(
         productsActions.updateProduct(prodId, title, description, imageUrl)
@@ -37,26 +40,24 @@ const EditProductScreen = (props) => {
         productsActions.createProduct(title, description, imageUrl, +price)
       );
     }
-    props.navigation.goBack();
-  };
-  useEffect(() => {
+  }, [dispatch, prodId, title, description, imageUrl, price]);
+
+  useLayoutEffect(() => {
     props.navigation.setOptions({
-      headerTitle: props.route?.params?.productId
-        ? "Edit Product"
-        : "Add Product",
+      title: prodId ? "Edit Product" : "Add Product",
       headerRight: () => (
         <HeaderButtons HeaderButtonComponent={HeaderButton}>
           <Item
             title="Save"
             iconName={
-              Platform.OS === "android" ? "md-cehckmark" : "ios-checkmark"
+              Platform.OS === "android" ? "md-checkmark" : "ios-checkmark"
             }
             onPress={submitHandler}
           />
         </HeaderButtons>
       ),
     });
-  }, [props.navigation, submitHandler]);
+  }, [props.navigation, submitHandler, prodId]);
 
   return (
     <ScrollView>
@@ -64,43 +65,41 @@ const EditProductScreen = (props) => {
         <View style={styles.formControl}>
           <Text style={styles.label}>Title</Text>
           <TextInput
+            style={styles.input}
             value={title}
             onChangeText={(text) => setTitle(text)}
-            style={styles.input}
           />
         </View>
         <View style={styles.formControl}>
           <Text style={styles.label}>Image URL</Text>
           <TextInput
+            style={styles.input}
             value={imageUrl}
             onChangeText={(text) => setImageUrl(text)}
-            style={styles.input}
           />
         </View>
         {editedProduct ? null : (
           <View style={styles.formControl}>
             <Text style={styles.label}>Price</Text>
             <TextInput
+              style={styles.input}
               value={price}
               onChangeText={(text) => setPrice(text)}
-              style={styles.input}
             />
           </View>
         )}
         <View style={styles.formControl}>
           <Text style={styles.label}>Description</Text>
           <TextInput
+            style={styles.input}
             value={description}
             onChangeText={(text) => setDescription(text)}
-            style={styles.input}
           />
         </View>
       </View>
     </ScrollView>
   );
 };
-
-export default EditProductScreen;
 
 const styles = StyleSheet.create({
   form: {
@@ -120,3 +119,5 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
   },
 });
+
+export default EditProductScreen;
